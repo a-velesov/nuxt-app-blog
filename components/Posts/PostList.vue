@@ -3,6 +3,7 @@
     <section class="post-list">
       <post-preview
         id="1"
+        :is-admin="isAdmin"
         title="Hellow world"
         preview-text="Preview"
         thumbnail="https://cloudspoint.xyz/wp-content/uploads/2020/02/CODE-1.jpg"
@@ -16,6 +17,12 @@ import PostPreview from '@/components/Posts/PostPreview';
 
 export default {
   name: 'PostList',
+  props: {
+    isAdmin: {
+      type: Boolean,
+      default: false
+    }
+  },
   components: {
     PostPreview
   }
