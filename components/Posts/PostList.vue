@@ -2,11 +2,13 @@
   <div class="post-list">
     <section class="post-list">
       <post-preview
-        id="1"
+        v-for="post in posts"
+        :key="post.id"
+        :id="post.id"
         :is-admin="isAdmin"
-        title="Hellow world"
-        preview-text="Preview"
-        thumbnail="https://cloudspoint.xyz/wp-content/uploads/2020/02/CODE-1.jpg"
+        :title="post.title"
+        :previewText="post.previewText"
+        :thumbnail="post.thumbnail"
       />
     </section>
   </div>
@@ -21,6 +23,10 @@ export default {
     isAdmin: {
       type: Boolean,
       default: false
+    },
+    posts: {
+      type: Array,
+      required: true
     }
   },
   components: {
