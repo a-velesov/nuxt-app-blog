@@ -1,4 +1,5 @@
 import Vuex from 'vuex';
+import axios from 'axios';
 
 const store = () => {
   return new Vuex.Store({
@@ -12,28 +13,15 @@ const store = () => {
     },
     actions: {
       nuxtServerInit({ commit }) {
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            commit("setPosts", [
-                {
-                  id: "1",
-                  title: "First Post",
-                  previewText: "This is our first post!",
-                  thumbnail:
-                    "https://static.pexels.com/photos/270348/pexels-photo-270348.jpeg"
-                },
-                {
-                  id: "2",
-                  title: "Second Post",
-                  previewText: "This is our second post!",
-                  thumbnail:
-                    "https://static.pexels.com/photos/270348/pexels-photo-270348.jpeg"
-                }
-              ]);
-            resolve();
-          }, 1000);
-          // reject(new Error())
-        })
+        return axios.get(`${ process.env.NUXT_ENV_BASE_URL }/posts.json`)
+             .then(res => {
+               const posts = [];
+               for(const key in res.data) {
+                 posts.push({...res.data[key], id: key})
+               }
+               commit('setPosts', posts);
+             })
+             .catch();
       },
       setPosts({ commit }, posts) {
         commit('setPosts', posts);
