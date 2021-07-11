@@ -7,36 +7,35 @@
 </template>
 
 <script>
-import AdminPostForm from '@/components/Admin/AdminPostForm'
+import AdminPostForm from '@/components/Admin/AdminPostForm';
 import axios from 'axios';
 
 export default {
   layout: 'admin',
   components: {
-    AdminPostForm
+    AdminPostForm,
   },
   asyncData(context) {
     return axios.get(`${ process.env.NUXT_ENV_BASE_URL }/posts/${ context.params.postId }.json`)
-      .then(res => {
-        return {
-          loadedPost: { ...res.data, id: context.params.postId }
-        };
-      })
-      .catch(e => context.error(e));
+                .then(res => {
+                  return {
+                    loadedPost: {
+                      ...res.data,
+                      id: context.params.postId,
+                    },
+                  };
+                })
+                .catch(e => context.error(e));
   },
   methods: {
     onSubmitted(data) {
-      axios.put(`${ process.env.NUXT_ENV_BASE_URL }/posts/${this.$route.params.postId}.json`, {
-        ...data,
-        updatedData: new Date(),
-      })
-           .then(res => {
-             this.$router.push('/admin');
-           })
-           .catch(e => console.log(e));
+      this.$store.dispatch('editPost', data)
+          .then(() => {
+            this.$router.push('/admin');
+          });
     },
   },
-}
+};
 </script>
 
 <style scoped>

@@ -9,7 +9,6 @@
 <script>
 
 import AdminPostForm from '@/components/Admin/AdminPostForm';
-import axios from 'axios';
 
 export default {
   layout: 'admin',
@@ -18,14 +17,10 @@ export default {
   },
   methods: {
     onSubmitted(data) {
-      axios.post(`${ process.env.NUXT_ENV_BASE_URL }/posts.json`, {
-        ...data,
-        updatedData: new Date(),
+      this.$store.dispatch('addPost', data)
+          .then(() => {
+        this.$router.push('/admin');
       })
-           .then(res => {
-             this.$router.push('/admin');
-           })
-           .catch(e => console.log(e));
     },
   },
 };
