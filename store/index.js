@@ -5,7 +5,7 @@ const store = () => {
   return new Vuex.Store({
     state: {
       loadedPosts: [],
-      token: null
+      token: null,
     },
     mutations: {
       setPosts(state, posts) {
@@ -20,6 +20,9 @@ const store = () => {
       },
       setToken(state, token) {
         state.token = token;
+      },
+      clearToken(state) {
+        state.token = null;
       },
     },
     actions: {
@@ -42,7 +45,7 @@ const store = () => {
           ...post,
           updatedData: new Date(),
         };
-        return axios.post(`${ process.env.NUXT_ENV_BASE_URL }/posts.json?auth=${context.state.token}`, createdPost)
+        return axios.post(`${ process.env.NUXT_ENV_BASE_URL }/posts.json?auth=${ context.state.token }`, createdPost)
                     .then(res => {
                       context.commit('addPost', {
                         ...createdPost,
@@ -52,7 +55,7 @@ const store = () => {
                     .catch(e => console.log(e));
       },
       editPost(context, editedPost) {
-        return axios.put(`${ process.env.NUXT_ENV_BASE_URL }/posts/${ editedPost.id }.json?auth=${context.state.token}`, {
+        return axios.put(`${ process.env.NUXT_ENV_BASE_URL }/posts/${ editedPost.id }.json?auth=${ context.state.token }`, {
           ...editedPost,
           updatedData: new Date(),
         })
@@ -64,7 +67,7 @@ const store = () => {
       setPosts({ commit }, posts) {
         commit('setPosts', posts);
       },
-      auth({ commit }, data) {
+      auth(context, data) {
         let authUrl = process.env.NUXT_ENV_SIGN_IN;
         if(!data.isLogin) {
           authUrl = process.env.NUXT_ENV_SIGN_UP;
@@ -74,15 +77,34 @@ const store = () => {
           password: data.password,
           returnSecureToken: true,
         })
-             .then(res => {
-               commit('setToken', res.data.idToken)
-             })
-             .catch(e => console.log(e));
+                    .then(res => {
+                      context.commit('setToken', res.data.idToken);
+                      context.dispatch('logout', res.data.expiresIn * 1000);
+                      localStorage.setItem('token', res.data.idToken);
+                      localStorage.setItem('tokenExpiration', new Date().getTime() + res.data.expiresIn * 1000);
+                    })
+                    .catch(e => console.log(e));
+      },
+      logout({ commit }, time) {
+        setTimeout(() => {
+          commit('clearToken');
+        }, time);
+      },
+      initAuth(context) {
+        const token = localStorage.getItem('token');
+        const expirationDate = localStorage.getItem('tokenExpiration');
+
+        if (new Date().getTime() > +expirationDate || !token) return;
+        context.dispatch('logout', +expirationDate - new Date().getTime());
+        context.commit('setToken', token);
       },
     },
     getters: {
       loadedPosts(state) {
         return state.loadedPosts;
+      },
+      isAuth(state) {
+        return !!state.token;
       },
     },
   });
