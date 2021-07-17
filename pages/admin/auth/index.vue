@@ -1,15 +1,25 @@
 <template>
   <div class="admin-auth-page">
     <div class="auth-container">
-      <form>
-        <app-control-input type="email">E-Mail Address</app-control-input>
-        <app-control-input type="password">Password</app-control-input>
+      <form @submit.prevent="onSubmit">
+        <app-control-input
+          type="email"
+          v-model="email"
+        >E-Mail Address
+        </app-control-input>
+        <app-control-input
+          type="password"
+          v-model="password"
+        >Password
+        </app-control-input>
         <app-button type="submit">{{ isLogin ? 'Login' : 'Sign Up' }}</app-button>
         <app-button
           type="button"
           btn-style="inverted"
           style="margin-left: 10px"
-          @click="isLogin = !isLogin">Switch to {{ isLogin ? 'Signup' : 'Login' }}</app-button>
+          @click="isLogin = !isLogin"
+        >Switch to {{ isLogin ? 'Signup' : 'Login' }}
+        </app-button>
       </form>
     </div>
   </div>
@@ -17,15 +27,30 @@
 
 <script>
 
+import axios from 'axios';
+
 export default {
   name: 'AdminAuthPage',
   layout: 'admin',
   data() {
     return {
-      isLogin: true
-    }
-  }
-}
+      isLogin: true,
+      email: '',
+      password: '',
+    };
+  },
+  methods: {
+    onSubmit() {
+      this.$store.dispatch('auth', {
+        email: this.email,
+        password: this.password,
+        isLogin: this.isLogin,
+      }).then(() => {
+        this.$router.push('/admin');
+      })
+    },
+  },
+};
 </script>
 
 <style scoped>
