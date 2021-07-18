@@ -1,4 +1,5 @@
 import Vuex from 'vuex';
+import Cookie from 'js-cookie';
 import axios from 'axios';
 
 const store = () => {
@@ -79,23 +80,47 @@ const store = () => {
         })
                     .then(res => {
                       context.commit('setToken', res.data.idToken);
-                      context.dispatch('logout', res.data.expiresIn * 1000);
                       localStorage.setItem('token', res.data.idToken);
                       localStorage.setItem('tokenExpiration', new Date().getTime() + res.data.expiresIn * 1000);
+                      Cookie.set('jwt', res.data.idToken);
+                      Cookie.set(
+                        'expirationDate',
+                        new Date().getTime() + Number.parseInt(res.data.expiresIn) * 1000,
+                      );
                     })
                     .catch(e => console.log(e));
       },
-      logout({ commit }, time) {
-        setTimeout(() => {
-          commit('clearToken');
-        }, time);
-      },
-      initAuth(context) {
-        const token = localStorage.getItem('token');
-        const expirationDate = localStorage.getItem('tokenExpiration');
+      logout({ commit }) {
+        commit('clearToken');
+        Cookie.remove('jwt');
+        Cookie.remove('expirationDate');
+        console.log('logout');
 
-        if (new Date().getTime() > +expirationDate || !token) return;
-        context.dispatch('logout', +expirationDate - new Date().getTime());
+        if (process.client) localStorage.clear();
+      },
+      initAuth(context, req) {
+        let token, expDate;
+        if(req) {
+          if(!req.headers.cookie) return;
+
+          const jwtCookie = req.headers.cookie.split(';').find(c => c.trim().startsWith('jwt='));
+
+          if(!jwtCookie) return;
+
+          token = jwtCookie.split('=')[1];
+          expDate = req.headers.cookie
+                       .split(';')
+                       .find(c => c.trim().startsWith('expirationDate='))
+                       .split('=')[1];
+
+        } else {
+          token = localStorage.getItem('token');
+          expDate = localStorage.getItem('tokenExpiration');
+        }
+        if(new Date().getTime() > +expDate || !token) {
+          context.dispatch('logout');
+          return;
+        }
         context.commit('setToken', token);
       },
     },
@@ -104,7 +129,7 @@ const store = () => {
         return state.loadedPosts;
       },
       isAuth(state) {
-        return !!state.token;
+        return state.token !== null;
       },
     },
   });

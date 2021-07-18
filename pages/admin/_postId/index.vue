@@ -12,7 +12,7 @@ import axios from 'axios';
 
 export default {
   layout: 'admin',
-  middleware: ['auth', 'check-auth'],
+  middleware: ['check-auth', 'auth'],
   components: {
     AdminPostForm,
   },
