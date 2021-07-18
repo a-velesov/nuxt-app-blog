@@ -87,6 +87,7 @@ const store = () => {
                         'expirationDate',
                         new Date().getTime() + Number.parseInt(res.data.expiresIn) * 1000,
                       );
+                      return axios.post('http://localhost:3000/api/track-data', {data: 'Authenticated!'});
                     })
                     .catch(e => console.log(e));
       },
@@ -96,7 +97,7 @@ const store = () => {
         Cookie.remove('expirationDate');
         console.log('logout');
 
-        if (process.client) localStorage.clear();
+        if(process.client) localStorage.clear();
       },
       initAuth(context, req) {
         let token, expDate;
@@ -113,10 +114,10 @@ const store = () => {
                        .find(c => c.trim().startsWith('expirationDate='))
                        .split('=')[1];
 
-        } else {
+        } else if(process.client) {
           token = localStorage.getItem('token');
           expDate = localStorage.getItem('tokenExpiration');
-        }
+        };
         if(new Date().getTime() > +expDate || !token) {
           context.dispatch('logout');
           return;

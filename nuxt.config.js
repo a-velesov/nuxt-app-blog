@@ -1,4 +1,6 @@
-export default {
+const bodyParser = require('body-parser');
+
+module.exports = {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     title: 'Nuxt blog',
@@ -60,5 +62,10 @@ export default {
   transition: {
     name: 'fade',
     mode: 'out-in',
-  }
+  },
+
+  serverMiddleware: [
+    bodyParser.json(),
+    '~/api'
+  ]
 }
